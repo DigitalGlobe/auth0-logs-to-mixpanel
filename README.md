@@ -1,8 +1,8 @@
-# Auth0 - Logs to Mixpanel
+# Auth0 - Logs to Segment
 
 [![Auth0 Extensions](http://cdn.auth0.com/extensions/assets/badge.svg)](https://sandbox.it.auth0.com/api/run/auth0-extensions/extensions-badge?webtask_no_cache=1)
 
-This extension will take all of your Auth0 logs and export them to Mixpanel.
+This extension will take all of your Auth0 logs and export them to Segment.
 
 ## Configure Webtask
 
@@ -22,14 +22,13 @@ To run it on a schedule (run every 5 minutes for example):
 ```bash
 $ npm run build
 $ wt cron schedule \
-    --name auth0-logs-to-mixpanel \
+    --name auth0-logs-to-segment \
     --secret AUTH0_DOMAIN="YOUR_AUTH0_DOMAIN" \
     --secret AUTH0_GLOBAL_CLIENT_ID="YOUR_AUTH0_GLOBAL_CLIENT_ID" \
     --secret AUTH0_GLOBAL_CLIENT_SECRET="YOUR_AUTH0_GLOBAL_CLIENT_SECRET" \
     --secret LOG_LEVEL="1" \
     --secret LOG_TYPES="s,f" \
-    --secret MIXPANEL_TOKEN="MIXPANEL_TOKEN" \
-    --secret MIXPANEL_KEY="MIXPANEL_KEY" \
+    --secret SEGMENT_WRITE_KEY="SEGMENT_WRITE_KEY" \
     "*/5 * * * *" \
     build/bundle.js
 ```
@@ -43,13 +42,13 @@ The following settings are optional:
 
 ## Usage
 
-Go to your mixpanel account and inspect the logs (see Live View) 
+Go to your segment account and inspect the logs (see Live View)
 
-You can retrieve your token and API key from under Account -> Projects
+You can retrieve your source's write key by visiting that source in the Segment dashboard, then choosing Settings -> API Keys -> Write Key.
 
-For information on getting started with Mixpanel, please refere to the documentation here:
+For information on getting started with Segment, please refer to the documentation here:
 
-[Mixpanel Documentation](https://mixpanel.com/help/reference)
+[Segment Documentation](https://segment.com/docs/)
 
 
 ## Filters

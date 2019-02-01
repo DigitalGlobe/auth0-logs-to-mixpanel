@@ -6,13 +6,13 @@ const useragent = require('useragent');
 const express = require('express');
 const Webtask = require('webtask-tools');
 const app = express();
-const Mixpanel = require('mixpanel');
+const Analytics = require('analytics-node');
 const Request = require('request');
 const memoizer = require('lru-memoizer');
 
 function lastLogCheckpoint(req, res) {
   let ctx = req.webtaskContext;
-  let required_settings = ['AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_CLIENT_SECRET', 'MIXPANEL_TOKEN', 'MIXPANEL_KEY'];
+  let required_settings = ['AUTH0_DOMAIN', 'AUTH0_CLIENT_ID', 'AUTH0_CLIENT_SECRET', 'SEGMENT_WRITE_KEY'];
   let missing_settings = required_settings.filter((setting) => !ctx.data[setting]);
 
   if (missing_settings.length) {
@@ -27,15 +27,10 @@ function lastLogCheckpoint(req, res) {
       console.log('storage.get', err);
     }
 
-    // Create a new event logger
-    const Logger = Mixpanel.init(ctx.data.MIXPANEL_TOKEN, {
-      key: ctx.data.MIXPANEL_KEY
+    const analytics = new Analytics(ctx.data.SEGMENT_WRITE_KEY, {
+      flushAt: 100,
+      flushAfter: 1000,
     });
-
-    Logger.error = function (err, context) {
-      // Handle errors here
-      console.log("error", err, "context", context);
-    };
 
     // Start the process.
     async.waterfall([
@@ -94,7 +89,7 @@ function lastLogCheckpoint(req, res) {
         console.log(`Sending ${context.logs.length}`);
         if (context.logs.length > 0) {
           const now = Date.now();
-          const mixpanelEvents = context.logs.map(function (log) {
+          const segmentEvents = context.logs.map(function (log) {
             const eventName = logTypes[log.type].event;
             // TODO - consider setting the time to date in the underlying log file?
             // log.time = log.date;
@@ -107,9 +102,9 @@ function lastLogCheckpoint(req, res) {
           });
 
           // import all events at once
-          Logger.import_batch(mixpanelEvents, function(errorList) {
+          Logger.import_batch(segmentEvents, function(errorList) {
             if (errorList && errorList.length > 0) {
-              console.log('Errors occurred sending logs to Mixpanel:', JSON.stringify(errorList));
+              console.log('Errors occurred sending logs to Segment:', JSON.stringify(errorList));
               return callback(err);
             }
             console.log('Upload complete.');
@@ -421,7 +416,3 @@ app.get('/', lastLogCheckpoint);
 app.post('/', lastLogCheckpoint);
 
 module.exports = Webtask.fromExpress(app);
-
-
-
-
